@@ -1,0 +1,71 @@
+<h1>Books#show</h1>
+<!-- 投稿・編集に成功した時のメッセージ-->
+<% if flash[:notice] %>
+		  <p style="color: green"><%= flash[:notice] %></p>
+<% end %>
+
+<!-- 投稿に失敗した時のエラーメッセージ -->
+<% if @book.errors.any? %>
+  <h2><%= @book.errors.count %>error</h2>
+  <% @book.errors.full_messages.each do |message| %>
+    <p><%= message %></p>
+  <% end %>
+<% end %>
+
+<!-- ユーザー情報 -->
+<div class="user-info">
+  <h1>User info</h1>
+  <!--アソシエーションを利用-->
+  <!--選んだ本のユーザー情報を表示-->
+  <%= attachment_image_tag @book_detail.user, :profile_image, :fill, 60, 60, fallback: "no_image.jpg", format: 'jpeg' %>
+  <table>
+    <tr>
+  		<th>name</th>
+  		<th><%= @book_detail.user.name %></th>
+  	</tr>
+  	<tr>
+  		<th>introduction</th>
+  		<th><%= @book_detail.user.introduction %></th>
+  	</tr>
+  </table>
+  <!-- ログイン中のユーザー以外が編集できないようにするために強制的にログイン中のユーザーの詳細画面へ -->
+  <% if @book_detail.user == current_user %>
+    <%= link_to 'ユーザー編集', edit_user_path(current_user) %>
+  <% else %>
+    <%= link_to 'ユーザー編集', user_path(current_user) %>
+  <% end %>
+</div>
+
+
+
+<!--新しい本を投稿-->
+<div class="new-book">
+  <h1>New book</h1>
+  <%= form_with model:@book, local:true do |f| %>
+    <p>Title</p>
+    <%= f.text_field :title %>
+    <p>Opinion</p>
+    <%= f.text_area :body %><br>
+    <%= f.submit 'Create Book' %>
+  <% end %>
+</div>
+
+
+<!-- 選択した本の詳細-->
+<h1>Book detail</h1>
+<table>
+  <tr>
+    <td>
+      <%= attachment_image_tag @book_detail.user, :profile_image, :fill, 40, 40, fallback: "no_image.jpg", format: 'jpeg' %>
+    </td>
+    <td><%= @book_detail.title %></td>
+    <td><%= @book_detail.body %></td>
+    <!-- ログイン中のユーザーの本だったときだけ表示 -->
+    <% if @book_detail.user == current_user %>
+      <td><%= link_to 'Edit', edit_book_path(@book_detail) %></td>
+      <td><%= link_to 'Destroy', book_path(@book_detail), method: :delete, data:{confirm: '本当に消しますか？'} %></td>
+    <% end %>
+  </tr>
+</table>
+<!-- アソシエーションでuserテーブルにアクセスし,nameを取得 -->
+<%= link_to @book_detail.user.name, user_path(@book_detail.user.id) %>
